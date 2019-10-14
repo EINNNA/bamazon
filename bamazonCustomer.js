@@ -15,10 +15,24 @@ connection.connect(function(err) {
     if (err) throw err.message;
 });
 
+var products = res.products;
+
     connection.query(
         "SELECT * FROM products", (err, res) => {
             if (err) throw err.message; 
-        }console.table(res)  
+        console.table(res)  
+        inquirer.prompt([
+            { 
+                type: 'list',
+                name: 'buyingItem',
+                message: 'Which item do you want to buy?',
+                options: [
+                    products.forEach(item) => { 
+                        
+                    }
+                ]
+
+        }])
         }
     );
 
