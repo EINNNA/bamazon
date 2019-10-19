@@ -34,7 +34,7 @@ connection.connect(function(err) {
                     choices: function () {
                         var choices = [];
                         res.forEach(function (product) {
-                            choices.push(chalk.green("Price: $") + product.price + " || " + chalk.green("Product: ") + product.product_name);
+                            choices.push(chalk.green("SKU") + product.item_id + " || " + chalk.green("Price: $") + product.price + " || " + chalk.green("Product: ") + product.product_name);
                         });
                         return choices;
                     }.then(answers => {
@@ -42,15 +42,26 @@ connection.connect(function(err) {
                             { 
                                 type: 'input',
                                 name: 'buyingItem',
-                                message: 'How many do you want to buy?',
-                        }.then(answers => {
-                            function buyingAmount(){
-                                connection.query(
-                                    "UPDATE products SET ?",
-                                    {
-                                    stock_quantity: answers.buyingItem.stock_quantity--
-                                    }
+                                message: 'Which item do you want to buy?(Please use SKU)'
+                            }, 
+                            {
+                                type: 'input',
+                                name: 'itemAmount',
+                                message: 'How many do you want to buy?'
+                            }
+                    ]).then(answers => {
+                        var amount = parseInt(answers.itemAmount);
+                        var itemBought = answers.buyingItem;
+
+                        if (itemBought == product.product_name && amount > 0){
+                            connection.query(
+                                "UPDATE products SET stock_quantity WHERE 'item_id' =" + itemBought + ";"
                                 )
+                            } else {
+                                console.log("Out of stock, we are not able to supply this, please pick another item")
+                                buyingItem();
+                            }
+
                             }
                         buyingAmount();
                         })
