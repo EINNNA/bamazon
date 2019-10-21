@@ -1,7 +1,6 @@
 //PACKAGES
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-const chalk = require("chalk");
 
 //CONNECTION
 var connection = mysql.createConnection({
@@ -24,36 +23,46 @@ function table() {
         "SELECT * FROM products", (err, res) => {
             if (err) throw err.message;
             console.table(res);
-            buyingItem();
+            buyingItem(res);
         });
 }
 
-function buyingItem() {
+function buyingItem(res) {
     inquirer.prompt([
         {
-            type: 'list',
+            type: 'input',
             name: 'buyingItem',
-            message: 'Which item do you want to buy?',
-            choices: function () {
-                var choices = [];
-                res.forEach(function (product) {
-                    choices.push(chalk.green("SKU") + product.item_id + " || " + chalk.green("Price: $") + product.price + " || " + chalk.green("Product: ") + product.product_name);
-                });
-                return choices;
+            message: 'Which item do you want to buy(Use Item ID)?'
+        },
+        {
+            type: 'input',
+            name: 'itemAmount',
+            message: 'How many do you want to buy?'
+        }
+    ]).then(answers => {
+        console.log("Thanks for your selections. Checking to see if Item is in stock..")
+        var amount = parseInt(answers.itemAmount);
+        var itemBought = answers.buyingItem;
+        var newStock = res.stock_quantity;
+        console.log(newStock)
+        connection.query(
+            "SELECT stock_quantity, item_id FROM products",
+            function (err, res) {
+                console.table(res);
+                if (err) throw err;
+                if (amount < res.stock_quantity && itemBought == res.item_id) {
+                    connection.query(
+                        "UPDATE products SET ?",
+                        [
+                            { stock_quantity: newStock },
+                        ], function (err, res) {
+                            if (err) throw err;
+                            console.log("You've bought " + amount + " pieces of " + itemsbought + ". It will cost you $" + cost);
+                            console.table(res);
+                        }
+                    );
+                }
             }
-        }]).then(answers => {
-            var amount = parseInt(answers.itemAmount);
-            var itemBought = answers.buyingItem;
-
-            if (itemBought == product.product_name && amount > 0) {
-                connection.query(
-                    "UPDATE products SET stock_quantity WHERE 'item_id' =" + itemBought + ";"
-                )
-            } else {
-                console.log("Out of stock, we are not able to supply this, please pick another item")
-                buyingItem();
-            }
-        });
+        )
+    });
 };
-
-buyingItem();
