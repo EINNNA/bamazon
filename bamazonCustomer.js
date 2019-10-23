@@ -20,7 +20,7 @@ connection.connect(function (err) {
 
 function table() {
     connection.query(
-        "SELECT item_id, product_name, price, stock_quantity FROM products", (err, res) => {
+        "SELECT * FROM products", (err, res) => {
             if (err) throw err.message;
             console.table(res);
             buyingItem(res);
@@ -58,7 +58,7 @@ function buyingItem(res) {
                         { item_id: itemBuying}
                     ], function (err, res) {
                         if (err) throw err;
-                        console.log("You've bought " + amount + " pieces of " + res[i].product.name + ". It will cost you $" + cost);
+                        console.log("You've bought " + amount + " pieces of " + itemBought + ". It will cost you $" + cost);
                         table();
                     }
                 );
